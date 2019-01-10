@@ -1,2 +1,2 @@
 # func-lib
-Wrap funcs in its own lib.
+Wrap rpc handlers in its own lib.
