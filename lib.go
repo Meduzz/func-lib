@@ -8,25 +8,32 @@ import (
 	"log"
 
 	"github.com/Meduzz/helper/nuts"
+	"github.com/Meduzz/rpc"
 	"github.com/Meduzz/rpc/api"
-	"github.com/Meduzz/rpc/transports"
 )
 
 type (
 	Func struct {
-		server api.RpcServer
-		client api.RpcClient
-		specs  Specs
+		rpc   *rpc.RPC
+		specs Specs
 	}
 
 	// Spec - the user inputable.
 	Spec struct {
 		Name        string       `json:"name"`
 		Description string       `json:"description"`
-		Handler     api.Handler  `json:"-"`       // the handler func
-		Version     string       `json:"version"` // the version of this func
-		RPCBinding  *RPCBinding  `json:"rpc"`     // the rpc binding
-		HTTPBinding *HTTPBinding `json:"binding"` // the http binding, if any
+		Handler     api.Handler  `json:"-"`        // the handler func
+		Version     string       `json:"version"`  // the version of this func
+		Settings    *Settings    `json:"settings"` // Various settings
+		RPCBinding  *RPCBinding  `json:"rpc"`      // the rpc binding
+		HTTPBinding *HTTPBinding `json:"http"`     // the http binding, if any
+	}
+
+	// Settings - some settings
+	Settings struct {
+		RPC         bool `json:"rpc"`         // is this func rpc or eventy?
+		Timeout     int  `json:"timeout"`     // timeout in seconds in case of rpc=true
+		Loadbalance bool `json:"loadbalance"` // do we bind to a queue or not
 	}
 
 	// FuncSpec - what the servers see/want/need.
@@ -45,7 +52,6 @@ type (
 	// RPCBinding - how to bind this to rpc requests.
 	RPCBinding struct {
 		Topic string `json:"topic,omitempty"`
-		RPC   bool   `json:"rpc"`
 	}
 
 	Specs []*FuncSpec
@@ -60,14 +66,11 @@ var (
 )
 
 func NewSpec() *Spec {
-	return &Spec{
-		RPCBinding: &RPCBinding{},
-	}
+	return &Spec{}
 }
 
 func NewFunc() *Func {
 	flag.StringVar(&ns, "ns", "default", "set the namespace of this func")
-	flag.StringVar(&topic, "topic", "", "set the topic of this func")
 	flag.Parse()
 
 	return &Func{
@@ -77,18 +80,13 @@ func NewFunc() *Func {
 
 func (f *Func) Register(spec *Spec) {
 	if spec.IsValid() {
-		// Do we have an overriding topic set?
-		if topic != "" {
-			spec.RPCBinding.Topic = topic
-		}
-
 		funcSpec := &FuncSpec{
 			Spec:      spec,
 			Namespace: ns,
 		}
 		f.specs = append(f.specs, funcSpec)
 	} else {
-		log.Println("Spec is not valid. It must have name, description, handler & topic.")
+		log.Println("Spec is not valid. It must have name, description, version & handler.")
 	}
 }
 
@@ -104,8 +102,7 @@ func (f *Func) Start() {
 		return nil
 	})
 
-	f.server = transports.NewNatsRpcServerConn(f.specs.ID(), conn, true)
-	f.client = transports.NewNatsRpcClientConn(conn)
+	f.rpc = rpc.NewRpc(conn)
 
 	err = f.register()
 
@@ -114,11 +111,11 @@ func (f *Func) Start() {
 	}
 
 	for _, spec := range f.specs {
-		f.server.RegisterHandler(spec.Spec.RPCBinding.Topic, spec.Spec.Handler)
+		f.rpc.Handler(spec.Spec.Topic(spec.Namespace), spec.Namespace, spec.Spec.Handler)
 		log.Printf("[%s] (%s) started in namespace [%s].\n", spec.Spec.Name, spec.Spec.Version, ns)
 	}
 
-	f.server.Start()
+	f.rpc.Run()
 }
 
 func (f *Func) register() error {
@@ -129,7 +126,7 @@ func (f *Func) register() error {
 			return err
 		}
 
-		return f.client.Trigger("func.discovery", msg)
+		return f.rpc.Trigger("func.discovery", msg)
 	})
 }
 
@@ -162,5 +159,15 @@ func (s *Spec) IsValid() bool {
 	return s.Name != "" &&
 		s.Description != "" &&
 		s.Handler != nil &&
-		s.RPCBinding.Topic != ""
+		s.Version != ""
+}
+
+func (s *Spec) Topic(ns string) string {
+	hasher := sha1.New()
+
+	io.WriteString(hasher, ns)
+	io.WriteString(hasher, s.Name)
+	io.WriteString(hasher, s.Version)
+
+	return hex.EncodeToString(hasher.Sum(nil))
 }
