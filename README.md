@@ -1,2 +1,2 @@
 # func-lib
-Wrap rpc handlers in its own lib.
+Lib of libs to create nano services.
