@@ -26,6 +26,10 @@ func NewNatsLib() (*NatsLib, error) {
 	return lib, nil
 }
 
+func NewNatsLibConn(conn *nats.Conn) *NatsLib {
+	return &NatsLib{conn}
+}
+
 func (l *NatsLib) Subscribe(topic, queue string, handler nats.MsgHandler) (*nats.Subscription, error) {
 	if queue == "" {
 		return l.conn.Subscribe(topic, handler)
