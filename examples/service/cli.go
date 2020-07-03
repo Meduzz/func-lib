@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"../../servicelib"
-	"../../servicelib/service"
-	"../../servicelib/service/transports"
+	"github.com/Meduzz/func-lib/servicelib"
+	"github.com/Meduzz/func-lib/servicelib/service"
+	"github.com/Meduzz/func-lib/servicelib/service/transports"
 	"github.com/gin-gonic/gin"
 )
 
