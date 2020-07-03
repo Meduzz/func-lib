@@ -3,7 +3,7 @@ package commands
 import (
 	"log"
 
-	"../service"
+	"github.com/Meduzz/func-lib/servicelib/service"
 	"github.com/spf13/cobra"
 )
 

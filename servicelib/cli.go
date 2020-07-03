@@ -1,8 +1,8 @@
 package servicelib
 
 import (
-	"./commands"
-	"./service"
+	"github.com/Meduzz/func-lib/servicelib/commands"
+	"github.com/Meduzz/func-lib/servicelib/service"
 )
 
 func Run(service *service.ServiceDefinitionDTO) {

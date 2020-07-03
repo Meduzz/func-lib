@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"../service"
+	"github.com/Meduzz/func-lib/servicelib/service"
 	"github.com/spf13/cobra"
 )
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"../service"
+	"github.com/Meduzz/func-lib/servicelib/service"
 	"github.com/Meduzz/helper/http/client"
 	"github.com/spf13/cobra"
 )
