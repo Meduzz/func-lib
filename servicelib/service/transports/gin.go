@@ -10,6 +10,7 @@ import (
 type (
 	GinAPI struct {
 		srv       *gin.Engine
+		before    func() error
 		Domain    string         `json:"domain"`
 		Context   string         `json:"context"`
 		CbURL     string         `json:"callback"`
@@ -36,8 +37,9 @@ func Gin(domain, context, cbURL string) *GinAPI {
 
 	srv := gin.Default()
 	endpoints := make([]*EndpointDTO, 0)
+	empty := func() error { return nil }
 
-	return &GinAPI{srv, domain, context, cbURL, endpoints}
+	return &GinAPI{srv, empty, domain, context, cbURL, endpoints}
 }
 
 func (g *GinAPI) GET(url string, handler gin.HandlerFunc, roles ...string) {
@@ -76,8 +78,18 @@ func (g *GinAPI) PATCH(url string, handler gin.HandlerFunc, roles ...string) {
 }
 
 func (g *GinAPI) Start() {
+	err := g.before()
+
+	if err != nil {
+		panic(err)
+	}
+
 	port := utilz.Env("PORT", ":8080")
 
 	log.Printf("Starting gin on port: %s\n", port)
 	g.srv.Run(port)
+}
+
+func (g *GinAPI) SetBefore(hook func() error) {
+	g.before = hook
 }

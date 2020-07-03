@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"../../servicelib"
 	"../../servicelib/service"
 	"../../servicelib/service/transports"
@@ -23,6 +25,10 @@ func main() {
 	trnsp.POST("/on", func(ctx *gin.Context) {
 		ctx.Status(200)
 	}, system.Name)
+	trnsp.SetBefore(func() error {
+		log.Println("This was the before hook")
+		return nil
+	})
 
 	def := service.NewService(
 		"test",
