@@ -16,7 +16,7 @@ func main() {
 	trnsp := transports.Gin(
 		"test.example.com",
 		"/test",
-		"/callback",
+		"/on",
 	)
 
 	trnsp.GET("/hello/:world", func(ctx *gin.Context) {

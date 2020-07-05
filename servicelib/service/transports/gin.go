@@ -1,15 +1,12 @@
 package transports
 
 import (
-	"log"
-
 	"github.com/Meduzz/helper/utilz"
 	"github.com/gin-gonic/gin"
 )
 
 type (
 	GinAPI struct {
-		srv       *gin.Engine
 		before    func() error
 		Name      string         `json:"name"`
 		Type      string         `json:"type"`
@@ -21,9 +18,10 @@ type (
 	}
 
 	EndpointDTO struct {
-		Method string   `json:"method"`
-		URL    string   `json:"url"`
-		Roles  []string `json:"roles"`
+		Method  string   `json:"method"`
+		URL     string   `json:"url"`
+		Roles   []string `json:"roles"`
+		handler gin.HandlerFunc
 	}
 )
 
@@ -40,49 +38,39 @@ func (g *GinAPI) Envars() []string {
 }
 
 func Gin(domain, context, cbURL string) *GinAPI {
-	gin.SetMode(gin.ReleaseMode)
-
-	srv := gin.Default()
 	endpoints := make([]*EndpointDTO, 0)
 	envs := []string{"PORT"}
 	empty := func() error { return nil }
 
-	return &GinAPI{srv, empty, "gin", "http", domain, context, cbURL, endpoints, envs}
+	return &GinAPI{empty, "gin", "http", domain, context, cbURL, endpoints, envs}
 }
 
 func (g *GinAPI) GET(url string, handler gin.HandlerFunc, roles ...string) {
-	g.srv.GET(url, handler)
-	g.Endpoints = append(g.Endpoints, &EndpointDTO{"GET", url, roles})
+	g.Endpoints = append(g.Endpoints, &EndpointDTO{"GET", url, roles, handler})
 }
 
 func (g *GinAPI) POST(url string, handler gin.HandlerFunc, roles ...string) {
-	g.srv.POST(url, handler)
-	g.Endpoints = append(g.Endpoints, &EndpointDTO{"POST", url, roles})
+	g.Endpoints = append(g.Endpoints, &EndpointDTO{"POST", url, roles, handler})
 }
 
 func (g *GinAPI) PUT(url string, handler gin.HandlerFunc, roles ...string) {
-	g.srv.PUT(url, handler)
-	g.Endpoints = append(g.Endpoints, &EndpointDTO{"PUT", url, roles})
+	g.Endpoints = append(g.Endpoints, &EndpointDTO{"PUT", url, roles, handler})
 }
 
 func (g *GinAPI) DELETE(url string, handler gin.HandlerFunc, roles ...string) {
-	g.srv.DELETE(url, handler)
-	g.Endpoints = append(g.Endpoints, &EndpointDTO{"DELETE", url, roles})
+	g.Endpoints = append(g.Endpoints, &EndpointDTO{"DELETE", url, roles, handler})
 }
 
 func (g *GinAPI) HEAD(url string, handler gin.HandlerFunc, roles ...string) {
-	g.srv.HEAD(url, handler)
-	g.Endpoints = append(g.Endpoints, &EndpointDTO{"HEAD", url, roles})
+	g.Endpoints = append(g.Endpoints, &EndpointDTO{"HEAD", url, roles, handler})
 }
 
 func (g *GinAPI) OPTIONS(url string, handler gin.HandlerFunc, roles ...string) {
-	g.srv.OPTIONS(url, handler)
-	g.Endpoints = append(g.Endpoints, &EndpointDTO{"OPTIONS", url, roles})
+	g.Endpoints = append(g.Endpoints, &EndpointDTO{"OPTIONS", url, roles, handler})
 }
 
 func (g *GinAPI) PATCH(url string, handler gin.HandlerFunc, roles ...string) {
-	g.srv.PATCH(url, handler)
-	g.Endpoints = append(g.Endpoints, &EndpointDTO{"PATCH", url, roles})
+	g.Endpoints = append(g.Endpoints, &EndpointDTO{"PATCH", url, roles, handler})
 }
 
 func (g *GinAPI) Start() error {
@@ -92,10 +80,30 @@ func (g *GinAPI) Start() error {
 		return err
 	}
 
+	srv := gin.Default()
+
+	for _, ep := range g.Endpoints {
+		switch ep.Method {
+		case "GET":
+			srv.GET(ep.URL, ep.handler)
+		case "POST":
+			srv.POST(ep.URL, ep.handler)
+		case "PUT":
+			srv.PUT(ep.URL, ep.handler)
+		case "DELETE":
+			srv.DELETE(ep.URL, ep.handler)
+		case "HEAD":
+			srv.HEAD(ep.URL, ep.handler)
+		case "OPTIONS":
+			srv.OPTIONS(ep.URL, ep.handler)
+		case "PATCH":
+			srv.PATCH(ep.URL, ep.handler)
+		}
+	}
+
 	port := utilz.Env("PORT", ":8080")
 
-	log.Printf("Starting gin on port: %s\n", port)
-	return g.srv.Run(port)
+	return srv.Run(port)
 }
 
 func (g *GinAPI) SetBefore(hook func() error) {
