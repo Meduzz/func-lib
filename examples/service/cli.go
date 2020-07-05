@@ -41,5 +41,7 @@ func main() {
 		service.APIs(trnsp),
 		service.Roles(normal, system))
 
+	def.SetDescription("A very long\nmarkdown text\ngoes here...")
+
 	servicelib.Run(def)
 }

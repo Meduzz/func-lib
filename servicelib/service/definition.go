@@ -14,11 +14,12 @@ type (
 	}
 
 	ServiceDefinitionDTO struct {
-		Name    string   `json:"name"`
-		Version string   `json:"version"`
-		Envs    []string `json:"envs"`
-		APIs    []API    `json:"api"`
-		Roles   []*Role  `json:"roles"`
+		Name        string   `json:"name"`
+		Version     string   `json:"version"`
+		Description string   `json:"description"`
+		Envs        []string `json:"envs"`
+		APIs        []API    `json:"api"`
+		Roles       []*Role  `json:"roles"`
 	}
 )
 
@@ -46,4 +47,8 @@ func Roles(roles ...*Role) []*Role {
 
 func NewRole(name string, private bool) *Role {
 	return &Role{name, private}
+}
+
+func (s *ServiceDefinitionDTO) SetDescription(desc string) {
+	s.Description = desc
 }
