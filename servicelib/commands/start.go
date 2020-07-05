@@ -17,7 +17,7 @@ func Start(svc *service.ServiceDefinitionDTO) *cobra.Command {
 			var candidate service.API
 
 			for _, api := range svc.APIs {
-				if api.Name() == selected {
+				if api.ApiName() == selected {
 					candidate = api
 					break
 				}
@@ -27,7 +27,11 @@ func Start(svc *service.ServiceDefinitionDTO) *cobra.Command {
 				log.Fatalf("Transport named %s was not found", selected)
 			}
 
-			candidate.Start()
+			err := candidate.Start()
+
+			if err != nil {
+				panic(err)
+			}
 		},
 	}
 }

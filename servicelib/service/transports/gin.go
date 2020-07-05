@@ -11,10 +11,13 @@ type (
 	GinAPI struct {
 		srv       *gin.Engine
 		before    func() error
+		Name      string         `json:"name"`
+		Type      string         `json:"type"`
 		Domain    string         `json:"domain"`
 		Context   string         `json:"context"`
 		CbURL     string         `json:"callback"`
 		Endpoints []*EndpointDTO `json:"endpoints"`
+		Envs      []string       `json:"envs"`
 	}
 
 	EndpointDTO struct {
@@ -24,12 +27,16 @@ type (
 	}
 )
 
-func (g *GinAPI) Type() string {
-	return "http"
+func (g *GinAPI) ApiType() string {
+	return g.Type
 }
 
-func (g *GinAPI) Name() string {
-	return "gin"
+func (g *GinAPI) ApiName() string {
+	return g.Name
+}
+
+func (g *GinAPI) Envars() []string {
+	return g.Envs
 }
 
 func Gin(domain, context, cbURL string) *GinAPI {
@@ -37,9 +44,10 @@ func Gin(domain, context, cbURL string) *GinAPI {
 
 	srv := gin.Default()
 	endpoints := make([]*EndpointDTO, 0)
+	envs := []string{"PORT"}
 	empty := func() error { return nil }
 
-	return &GinAPI{srv, empty, domain, context, cbURL, endpoints}
+	return &GinAPI{srv, empty, "gin", "http", domain, context, cbURL, endpoints, envs}
 }
 
 func (g *GinAPI) GET(url string, handler gin.HandlerFunc, roles ...string) {
@@ -77,17 +85,17 @@ func (g *GinAPI) PATCH(url string, handler gin.HandlerFunc, roles ...string) {
 	g.Endpoints = append(g.Endpoints, &EndpointDTO{"PATCH", url, roles})
 }
 
-func (g *GinAPI) Start() {
+func (g *GinAPI) Start() error {
 	err := g.before()
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	port := utilz.Env("PORT", ":8080")
 
 	log.Printf("Starting gin on port: %s\n", port)
-	g.srv.Run(port)
+	return g.srv.Run(port)
 }
 
 func (g *GinAPI) SetBefore(hook func() error) {

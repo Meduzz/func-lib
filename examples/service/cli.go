@@ -23,6 +23,10 @@ func main() {
 		ctx.String(200, "Hello %s!", ctx.Param("world"))
 	}, normal.Name)
 	trnsp.POST("/on", func(ctx *gin.Context) {
+		bs, _ := ctx.GetRawData()
+
+		log.Printf("%s", string(bs))
+
 		ctx.Status(200)
 	}, system.Name)
 	trnsp.SetBefore(func() error {

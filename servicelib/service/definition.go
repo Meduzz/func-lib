@@ -2,9 +2,10 @@ package service
 
 type (
 	API interface {
-		Type() string
-		Name() string
-		Start()
+		ApiType() string
+		ApiName() string
+		Start() error
+		Envars() []string
 	}
 
 	Role struct {

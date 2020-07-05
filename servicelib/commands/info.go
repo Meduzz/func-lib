@@ -10,15 +10,21 @@ import (
 
 func Info(service *service.ServiceDefinitionDTO) *cobra.Command {
 	apis := make([]string, 0)
+	envs := fmt.Sprintf("\nCore service:\n%s", strings.Join(service.Envs, ", "))
 
 	for _, api := range service.APIs {
-		apis = append(apis, fmt.Sprintf("%s of type %s", api.Name(), api.Type()))
+		apis = append(apis, fmt.Sprintf("%s of type %s", api.ApiName(), api.ApiType()))
+
+		if len(api.Envars()) > 0 {
+			envars := strings.Join(api.Envars(), ", ")
+			envs = fmt.Sprintf("%s\n\nTransport %s:\n%s", envs, api.ApiName(), envars)
+		}
 	}
 
-	info := fmt.Sprintf("%s (v%s) expects the following ENVs to be set:\n%s\n\nIt has the following transports:\n%s",
+	info := fmt.Sprintf("%s (v%s) expects the following ENVs:\n%s\n\nIt has the following transports:\n%s",
 		service.Name,
 		service.Version,
-		strings.Join(service.Envs, ", "),
+		envs,
 		strings.Join(apis, "\n"))
 
 	return &cobra.Command{
