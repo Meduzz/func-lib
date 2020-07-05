@@ -8,20 +8,25 @@ import (
 type (
 	GinAPI struct {
 		before    func() error
-		Name      string         `json:"name"`
-		Type      string         `json:"type"`
-		Domain    string         `json:"domain"`
-		Context   string         `json:"context"`
-		CbURL     string         `json:"callback"`
-		Endpoints []*EndpointDTO `json:"endpoints"`
-		Envs      []string       `json:"envs"`
+		Name      string            `json:"name"`
+		Type      string            `json:"type"`
+		Domain    string            `json:"domain"`
+		Context   string            `json:"context"`
+		CbURL     string            `json:"callback"`
+		Endpoints []*GinEndpointDTO `json:"endpoints"`
+		Envs      []string          `json:"envs"`
 	}
 
-	EndpointDTO struct {
-		Method  string   `json:"method"`
-		URL     string   `json:"url"`
-		Roles   []string `json:"roles"`
-		handler gin.HandlerFunc
+	GinEndpointDTO struct {
+		Method           string   `json:"method"`
+		URL              string   `json:"url"`
+		Roles            []string `json:"roles"`
+		handler          gin.HandlerFunc
+		Description      string      `json:"description,omitempty"`
+		RequestEncoding  string      `json:"request-encoding,omitempty"`
+		ResponseEncoding string      `json:"response-encoding,omitempty"`
+		Expects          interface{} `json:"expects,omitempty"`
+		Returns          interface{} `json:"returns,omitempty"`
 	}
 )
 
@@ -38,39 +43,95 @@ func (g *GinAPI) Envars() []string {
 }
 
 func Gin(domain, context, cbURL string) *GinAPI {
-	endpoints := make([]*EndpointDTO, 0)
+	endpoints := make([]*GinEndpointDTO, 0)
 	envs := []string{"PORT"}
 	empty := func() error { return nil }
 
 	return &GinAPI{empty, "gin", "http", domain, context, cbURL, endpoints, envs}
 }
 
-func (g *GinAPI) GET(url string, handler gin.HandlerFunc, roles ...string) {
-	g.Endpoints = append(g.Endpoints, &EndpointDTO{"GET", url, roles, handler})
+func (g *GinAPI) GET(url string, handler gin.HandlerFunc, roles ...string) *GinEndpointDTO {
+	ep := &GinEndpointDTO{
+		Method:  "GET",
+		URL:     url,
+		Roles:   roles,
+		handler: handler,
+	}
+	g.Endpoints = append(g.Endpoints, ep)
+
+	return ep
 }
 
-func (g *GinAPI) POST(url string, handler gin.HandlerFunc, roles ...string) {
-	g.Endpoints = append(g.Endpoints, &EndpointDTO{"POST", url, roles, handler})
+func (g *GinAPI) POST(url string, handler gin.HandlerFunc, roles ...string) *GinEndpointDTO {
+	ep := &GinEndpointDTO{
+		Method:  "POST",
+		URL:     url,
+		Roles:   roles,
+		handler: handler,
+	}
+	g.Endpoints = append(g.Endpoints, ep)
+
+	return ep
 }
 
-func (g *GinAPI) PUT(url string, handler gin.HandlerFunc, roles ...string) {
-	g.Endpoints = append(g.Endpoints, &EndpointDTO{"PUT", url, roles, handler})
+func (g *GinAPI) PUT(url string, handler gin.HandlerFunc, roles ...string) *GinEndpointDTO {
+	ep := &GinEndpointDTO{
+		Method:  "PUT",
+		URL:     url,
+		Roles:   roles,
+		handler: handler,
+	}
+	g.Endpoints = append(g.Endpoints, ep)
+
+	return ep
 }
 
-func (g *GinAPI) DELETE(url string, handler gin.HandlerFunc, roles ...string) {
-	g.Endpoints = append(g.Endpoints, &EndpointDTO{"DELETE", url, roles, handler})
+func (g *GinAPI) DELETE(url string, handler gin.HandlerFunc, roles ...string) *GinEndpointDTO {
+	ep := &GinEndpointDTO{
+		Method:  "DELETE",
+		URL:     url,
+		Roles:   roles,
+		handler: handler,
+	}
+	g.Endpoints = append(g.Endpoints, ep)
+
+	return ep
 }
 
-func (g *GinAPI) HEAD(url string, handler gin.HandlerFunc, roles ...string) {
-	g.Endpoints = append(g.Endpoints, &EndpointDTO{"HEAD", url, roles, handler})
+func (g *GinAPI) HEAD(url string, handler gin.HandlerFunc, roles ...string) *GinEndpointDTO {
+	ep := &GinEndpointDTO{
+		Method:  "HEAD",
+		URL:     url,
+		Roles:   roles,
+		handler: handler,
+	}
+	g.Endpoints = append(g.Endpoints, ep)
+
+	return ep
 }
 
-func (g *GinAPI) OPTIONS(url string, handler gin.HandlerFunc, roles ...string) {
-	g.Endpoints = append(g.Endpoints, &EndpointDTO{"OPTIONS", url, roles, handler})
+func (g *GinAPI) OPTIONS(url string, handler gin.HandlerFunc, roles ...string) *GinEndpointDTO {
+	ep := &GinEndpointDTO{
+		Method:  "OPTIONS",
+		URL:     url,
+		Roles:   roles,
+		handler: handler,
+	}
+	g.Endpoints = append(g.Endpoints, ep)
+
+	return ep
 }
 
-func (g *GinAPI) PATCH(url string, handler gin.HandlerFunc, roles ...string) {
-	g.Endpoints = append(g.Endpoints, &EndpointDTO{"PATCH", url, roles, handler})
+func (g *GinAPI) PATCH(url string, handler gin.HandlerFunc, roles ...string) *GinEndpointDTO {
+	ep := &GinEndpointDTO{
+		Method:  "PATCH",
+		URL:     url,
+		Roles:   roles,
+		handler: handler,
+	}
+	g.Endpoints = append(g.Endpoints, ep)
+
+	return ep
 }
 
 func (g *GinAPI) Start() error {
@@ -108,4 +169,24 @@ func (g *GinAPI) Start() error {
 
 func (g *GinAPI) SetBefore(hook func() error) {
 	g.before = hook
+}
+
+func (e *GinEndpointDTO) SetDescription(desc string) {
+	e.Description = desc
+}
+
+func (e *GinEndpointDTO) SetRequestEncoding(enc string) {
+	e.RequestEncoding = enc
+}
+
+func (e *GinEndpointDTO) SetResponseEncoding(enc string) {
+	e.ResponseEncoding = enc
+}
+
+func (e *GinEndpointDTO) SetExpects(entity interface{}) {
+	e.Expects = entity
+}
+
+func (e *GinEndpointDTO) SetReturns(entity interface{}) {
+	e.Returns = entity
 }
