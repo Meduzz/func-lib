@@ -12,7 +12,6 @@ type (
 		Type      string            `json:"type"`
 		Domain    string            `json:"domain"`
 		Context   string            `json:"context"`
-		CbURL     string            `json:"callback"`
 		Endpoints []*GinEndpointDTO `json:"endpoints"`
 		Envs      []string          `json:"envs"`
 	}
@@ -42,12 +41,12 @@ func (g *GinAPI) Envars() []string {
 	return g.Envs
 }
 
-func Gin(domain, context, cbURL string) *GinAPI {
+func Gin(domain, context string) *GinAPI {
 	endpoints := make([]*GinEndpointDTO, 0)
 	envs := []string{"PORT"}
 	empty := func() error { return nil }
 
-	return &GinAPI{empty, "gin", "http", domain, context, cbURL, endpoints, envs}
+	return &GinAPI{empty, "gin", "http", domain, context, endpoints, envs}
 }
 
 func (g *GinAPI) GET(url string, handler gin.HandlerFunc, roles ...string) *GinEndpointDTO {
