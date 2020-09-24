@@ -11,6 +11,7 @@ type (
 		Type      string             `json:"type"`
 		Envs      []string           `json:"envs"`
 		Endpoints []*NatsEndpointDTO `json:"endpoints"`
+		conn      *nats.Conn
 	}
 
 	NatsEndpointDTO struct {
@@ -48,6 +49,10 @@ func Nats(name string) *NatsAPI {
 	return n
 }
 
+func (n *NatsAPI) SetConn(conn *nats.Conn) {
+	n.conn = conn
+}
+
 func (n *NatsAPI) Handle(topic, group string, handler nats.MsgHandler) {
 	ep := &NatsEndpointDTO{
 		Topic:   topic,
@@ -59,17 +64,21 @@ func (n *NatsAPI) Handle(topic, group string, handler nats.MsgHandler) {
 }
 
 func (n *NatsAPI) Start() error {
-	conn, err := nuts.Connect()
+	if n.conn == nil {
+		conn, err := nuts.Connect()
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+
+		n.conn = conn
 	}
 
 	for _, ep := range n.Endpoints {
 		if ep.Group != "" {
-			conn.QueueSubscribe(ep.Topic, ep.Group, ep.handler)
+			n.conn.QueueSubscribe(ep.Topic, ep.Group, ep.handler)
 		} else {
-			conn.Subscribe(ep.Topic, ep.handler)
+			n.conn.Subscribe(ep.Topic, ep.handler)
 		}
 	}
 
