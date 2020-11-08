@@ -31,7 +31,7 @@ func Upload(service *service.ServiceDefinitionDTO) *cobra.Command {
 				fmt.Println(string(bs))
 			} else {
 				if url == "" {
-					fmt.Printf("No url specified (--url <http://...>")
+					fmt.Println("No url specified (--url <http://...>)")
 					os.Exit(1)
 				}
 
