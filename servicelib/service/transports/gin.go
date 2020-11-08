@@ -1,8 +1,9 @@
 package transports
 
 import (
-	"../annotation"
-	"../dto"
+	"github.com/Meduzz/func-lib/servicelib/service/annotation"
+	"github.com/Meduzz/func-lib/servicelib/service/dto"
+
 	"github.com/Meduzz/helper/utilz"
 	"github.com/gin-gonic/gin"
 )

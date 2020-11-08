@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"../annotation"
+	"github.com/Meduzz/func-lib/servicelib/service/annotation"
 )
 
 type (
