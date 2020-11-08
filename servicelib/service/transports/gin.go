@@ -1,6 +1,8 @@
 package transports
 
 import (
+	"../annotation"
+	"../dto"
 	"github.com/Meduzz/helper/utilz"
 	"github.com/gin-gonic/gin"
 )
@@ -17,15 +19,14 @@ type (
 	}
 
 	GinEndpointDTO struct {
-		Method           string   `json:"method"`
-		URL              string   `json:"url"`
-		Roles            []string `json:"roles"`
-		handler          gin.HandlerFunc
-		Description      string      `json:"description,omitempty"`
-		RequestEncoding  string      `json:"request-encoding,omitempty"`
-		ResponseEncoding string      `json:"response-encoding,omitempty"`
-		Expects          interface{} `json:"expects,omitempty"`
-		Returns          interface{} `json:"returns,omitempty"`
+		Method      string   `json:"method"`
+		URL         string   `json:"url"`
+		Roles       []string `json:"roles"`
+		handler     gin.HandlerFunc
+		Description string                  `json:"description,omitempty"`
+		Expects     *dto.EntityDTO          `json:"expects,omitempty"`
+		Returns     *dto.EntityDTO          `json:"returns,omitempty"`
+		Annotations []annotation.Annotation `json:"annotations,omitempty"`
 	}
 )
 
@@ -174,18 +175,10 @@ func (e *GinEndpointDTO) SetDescription(desc string) {
 	e.Description = desc
 }
 
-func (e *GinEndpointDTO) SetRequestEncoding(enc string) {
-	e.RequestEncoding = enc
-}
-
-func (e *GinEndpointDTO) SetResponseEncoding(enc string) {
-	e.ResponseEncoding = enc
-}
-
-func (e *GinEndpointDTO) SetExpects(entity interface{}) {
+func (e *GinEndpointDTO) SetExpects(entity *dto.EntityDTO) {
 	e.Expects = entity
 }
 
-func (e *GinEndpointDTO) SetReturns(entity interface{}) {
+func (e *GinEndpointDTO) SetReturns(entity *dto.EntityDTO) {
 	e.Returns = entity
 }
