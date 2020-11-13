@@ -14,21 +14,27 @@ type (
 	}
 
 	ServiceDefinitionDTO struct {
-		Name        string   `json:"name"`
-		Version     string   `json:"version"`
-		Description string   `json:"description"`
-		Envs        []string `json:"envs"`
-		APIs        []API    `json:"api"`
-		Roles       []*Role  `json:"roles"`
+		Name        string         `json:"name"`
+		Version     string         `json:"version"`
+		Description string         `json:"description"`
+		Envs        []string       `json:"envs"`
+		APIs        map[string]API `json:"api"`
+		Roles       []*Role        `json:"roles"`
 	}
 )
 
 func NewService(name, version string, envs []string, apis []API, roles []*Role) *ServiceDefinitionDTO {
+	apiMap := make(map[string]API)
+
+	for _, api := range apis {
+		apiMap[api.ApiName()] = api
+	}
+
 	return &ServiceDefinitionDTO{
 		Name:    name,
 		Version: version,
 		Envs:    envs,
-		APIs:    apis,
+		APIs:    apiMap,
 		Roles:   roles,
 	}
 }
