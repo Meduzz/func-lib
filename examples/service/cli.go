@@ -52,7 +52,7 @@ func main() {
 
 	ep.SetDescription("This endpoint is used for callbacks, and this is markdown.")
 	ep.SetExpects(dto.NewEntity("SearchQuery", dto.Fields(query)))
-	ep.SetReturns(dto.FromStruct(Result{}))
+	ep.SetReturns(dto.FromStruct([]*Result{}))
 	ep.AddAnnotation(annotation.Name("query"))
 
 	def := service.NewService(

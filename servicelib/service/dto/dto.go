@@ -37,6 +37,29 @@ func FromStruct(dto interface{}) *EntityDTO {
 
 	fields := make([]*FieldDTO, 0)
 
+	if entity.Kind() == reflect.Array || entity.Kind() == reflect.Slice {
+		entity = entity.Elem()
+
+		if entity.Kind() == reflect.Ptr {
+			entity = entity.Elem()
+		}
+
+		for i := 0; i < entity.NumField(); i++ {
+			field := entity.Field(i)
+			if name, ok := field.Tag.Lookup("json"); ok {
+				if name != "" {
+					f := NewField(name, annotation.Type(field.Type.String()))
+					fields = append(fields, f)
+				}
+			}
+		}
+
+		field := NewFieldWithChildren(entity.Name(), fields)
+		field.AddAnnotation(annotation.Type("array"))
+
+		return NewEntity("", []*FieldDTO{field})
+	}
+
 	for i := 0; i < entity.NumField(); i++ {
 		field := entity.Field(i)
 		if name, ok := field.Tag.Lookup("json"); ok {
