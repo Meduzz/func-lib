@@ -7,9 +7,6 @@ import (
 
 type (
 	NatsAPI struct {
-		Name      string             `json:"name"`
-		Type      string             `json:"type"`
-		Envs      []string           `json:"envs"`
 		Endpoints []*NatsEndpointDTO `json:"endpoints"`
 		conn      *nats.Conn
 	}
@@ -21,32 +18,20 @@ type (
 	}
 )
 
-func (n *NatsAPI) ApiType() string {
-	return n.Type
-}
-
-func (n *NatsAPI) ApiName() string {
-	return n.Name
-}
-
-func (n *NatsAPI) Envars() []string {
-	return n.Envs
-}
-
-func Nats(name string) *NatsAPI {
-	envs := make([]string, 0)
+func Nats(name string) (*ApiDefinition, *NatsAPI) {
+	envs := []string{"NATS_URL"}
 	eps := make([]*NatsEndpointDTO, 0)
 
 	n := &NatsAPI{
-		Name:      name,
-		Type:      "nats",
 		Endpoints: eps,
-		Envs:      envs,
 	}
 
-	n.AddEnv("NATS_URL")
-
-	return n
+	return &ApiDefinition{
+		Name:       name,
+		Type:       "nats",
+		Envs:       envs,
+		Definition: n,
+	}, n
 }
 
 func (n *NatsAPI) SetConn(conn *nats.Conn) {
@@ -83,8 +68,4 @@ func (n *NatsAPI) Start() error {
 	}
 
 	return nil
-}
-
-func (n *NatsAPI) AddEnv(env string) {
-	n.Envs = append(n.Envs, env)
 }

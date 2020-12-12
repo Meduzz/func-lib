@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/Meduzz/func-lib/servicelib/service"
+	"github.com/Meduzz/func-lib/servicelib/service/transports"
 	"github.com/spf13/cobra"
 )
 
@@ -14,10 +15,10 @@ func Start(svc *service.ServiceDefinitionDTO) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			selected := cmd.Flags().Arg(0)
-			var candidate service.API
+			var candidate *transports.ApiDefinition
 
 			for _, api := range svc.APIs {
-				if api.ApiName() == selected {
+				if api.Name == selected {
 					candidate = api
 					break
 				}
@@ -27,7 +28,7 @@ func Start(svc *service.ServiceDefinitionDTO) *cobra.Command {
 				log.Fatalf("Transport named %s was not found", selected)
 			}
 
-			err := candidate.Start()
+			err := transports.Start(candidate)
 
 			if err != nil {
 				panic(err)

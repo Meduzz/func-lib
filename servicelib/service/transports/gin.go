@@ -11,12 +11,9 @@ import (
 type (
 	GinAPI struct {
 		before    func() error
-		Name      string            `json:"name"`
-		Type      string            `json:"type"`
 		Domain    string            `json:"domain"`
 		Context   string            `json:"context"`
 		Endpoints []*GinEndpointDTO `json:"endpoints"`
-		Envs      []string          `json:"envs"`
 	}
 
 	GinEndpointDTO struct {
@@ -28,27 +25,24 @@ type (
 		Expects     *dto.EntityDTO          `json:"expects,omitempty"`
 		Returns     *dto.EntityDTO          `json:"returns,omitempty"`
 		Annotations []annotation.Annotation `json:"annotations,omitempty"`
+		PathParams  []*dto.FieldDTO         `json:"pathparams,omitempty"`
+		QueryParams []*dto.FieldDTO         `json:"queryparams,omitempty"`
 	}
 )
 
-func (g *GinAPI) ApiType() string {
-	return g.Type
-}
-
-func (g *GinAPI) ApiName() string {
-	return g.Name
-}
-
-func (g *GinAPI) Envars() []string {
-	return g.Envs
-}
-
-func Gin(domain, context string) *GinAPI {
+func Gin(domain, context string) (*ApiDefinition, *GinAPI) {
 	endpoints := make([]*GinEndpointDTO, 0)
 	envs := []string{"PORT"}
 	empty := func() error { return nil }
 
-	return &GinAPI{empty, "gin", "http", domain, context, endpoints, envs}
+	definition := &GinAPI{empty, domain, context, endpoints}
+
+	return &ApiDefinition{
+		Type:       "gin",
+		Name:       "gin",
+		Envs:       envs,
+		Definition: definition,
+	}, definition
 }
 
 func (g *GinAPI) GET(url string, handler gin.HandlerFunc, roles ...string) *GinEndpointDTO {
@@ -182,4 +176,16 @@ func (e *GinEndpointDTO) SetExpects(entity *dto.EntityDTO) {
 
 func (e *GinEndpointDTO) SetReturns(entity *dto.EntityDTO) {
 	e.Returns = entity
+}
+
+func (e *GinEndpointDTO) AddAnnotation(annotation annotation.Annotation) {
+	e.Annotations = append(e.Annotations, annotation)
+}
+
+func (e *GinEndpointDTO) AddPathParam(param *dto.FieldDTO) {
+	e.PathParams = append(e.PathParams, param)
+}
+
+func (e *GinEndpointDTO) AddQueryParam(param *dto.FieldDTO) {
+	e.QueryParams = append(e.QueryParams, param)
 }

@@ -13,19 +13,10 @@ type (
 
 	FieldDTO struct {
 		Name        string                  `json:"name"`
-		Type        int                     `json:"type"`
 		Fields      []*FieldDTO             `json:"fields,omitempty"`
 		Annotations []annotation.Annotation `json:"annotations,omitempty"`
 		Description string                  `json:"description,omitempty"`
 	}
-)
-
-const (
-	Object int = iota
-	Number
-	Boolean
-	String
-	Array
 )
 
 func NewEntity(name string, fields []*FieldDTO) *EntityDTO {
@@ -35,24 +26,17 @@ func NewEntity(name string, fields []*FieldDTO) *EntityDTO {
 	}
 }
 
-func NewField(name string, typ int) *FieldDTO {
+func NewField(name string, annotations ...annotation.Annotation) *FieldDTO {
 	return &FieldDTO{
-		Name: name,
-		Type: typ,
+		Name:        name,
+		Annotations: annotations,
 	}
 }
 
 func NewFieldWithChildren(name string, fields []*FieldDTO) *FieldDTO {
 	return &FieldDTO{
 		Name:   name,
-		Type:   Object,
 		Fields: fields,
-	}
-}
-
-func NewArrayField(typ int) *FieldDTO {
-	return &FieldDTO{
-		Type: typ,
 	}
 }
 

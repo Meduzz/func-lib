@@ -33,3 +33,7 @@ func KeyIntValue(key string, value int) Annotation {
 func KeyBooleanValue(key string, value bool) Annotation {
 	return Annotation(fmt.Sprintf("%s=%v", key, value))
 }
+
+func Type(value string) Annotation {
+	return KeyValue("type", value)
+}

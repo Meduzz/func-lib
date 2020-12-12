@@ -1,40 +1,31 @@
 package service
 
-type (
-	API interface {
-		ApiType() string
-		ApiName() string
-		Start() error
-		Envars() []string
-	}
+import (
+	"github.com/Meduzz/func-lib/servicelib/service/transports"
+)
 
+type (
 	Role struct {
 		Name    string `json:"name"`
 		Private bool   `json:"private"`
 	}
 
 	ServiceDefinitionDTO struct {
-		Name        string         `json:"name"`
-		Version     string         `json:"version"`
-		Description string         `json:"description"`
-		Envs        []string       `json:"envs"`
-		APIs        map[string]API `json:"api"`
-		Roles       []*Role        `json:"roles"`
+		Name        string                      `json:"name"`
+		Version     string                      `json:"version"`
+		Description string                      `json:"description"`
+		Envs        []string                    `json:"envs"`
+		APIs        []*transports.ApiDefinition `json:"api"`
+		Roles       []*Role                     `json:"roles"`
 	}
 )
 
-func NewService(name, version string, envs []string, apis []API, roles []*Role) *ServiceDefinitionDTO {
-	apiMap := make(map[string]API)
-
-	for _, api := range apis {
-		apiMap[api.ApiName()] = api
-	}
-
+func NewService(name, version string, envs []string, apis []*transports.ApiDefinition, roles []*Role) *ServiceDefinitionDTO {
 	return &ServiceDefinitionDTO{
 		Name:    name,
 		Version: version,
 		Envs:    envs,
-		APIs:    apiMap,
+		APIs:    apis,
 		Roles:   roles,
 	}
 }
@@ -43,7 +34,7 @@ func Envs(envs ...string) []string {
 	return envs
 }
 
-func APIs(apis ...API) []API {
+func APIs(apis ...*transports.ApiDefinition) []*transports.ApiDefinition {
 	return apis
 }
 

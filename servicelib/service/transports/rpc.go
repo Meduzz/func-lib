@@ -8,10 +8,7 @@ import (
 
 type (
 	RpcAPI struct {
-		Name      string            `json:"name"`
-		Type      string            `json:"type"`
 		Endpoints []*RpcEndpointDTO `json:"endpoints"`
-		Envs      []string          `json:"envs"`
 	}
 
 	RpcEndpointDTO struct {
@@ -21,19 +18,18 @@ type (
 	}
 )
 
-func (r *RpcAPI) ApiType() string {
-	return r.Type
-}
-
-func Rpc(name string) *RpcAPI {
+func Rpc(name string) (*ApiDefinition, *RpcAPI) {
 	eps := make([]*RpcEndpointDTO, 0)
 	envs := make([]string, 0)
 
-	return &RpcAPI{name, "rpc", eps, envs}
-}
+	api := &RpcAPI{eps}
 
-func (r *RpcAPI) ApiName() string {
-	return r.Name
+	return &ApiDefinition{
+		Name:       name,
+		Type:       "rpc",
+		Envs:       envs,
+		Definition: api,
+	}, api
 }
 
 func (r *RpcAPI) Handle(topic, group string, handler func(api.Context)) {
@@ -56,12 +52,4 @@ func (r *RpcAPI) Start() error {
 	srv.Run()
 
 	return nil
-}
-
-func (r *RpcAPI) AddEnv(env string) {
-	r.Envs = append(r.Envs, env)
-}
-
-func (r *RpcAPI) Envars() []string {
-	return r.Envs
 }

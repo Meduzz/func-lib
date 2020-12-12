@@ -13,11 +13,11 @@ func Info(service *service.ServiceDefinitionDTO) *cobra.Command {
 	envs := fmt.Sprintf("\nCore service:\n%s", strings.Join(service.Envs, ", "))
 
 	for _, api := range service.APIs {
-		apis = append(apis, fmt.Sprintf("%s of type %s", api.ApiName(), api.ApiType()))
+		apis = append(apis, fmt.Sprintf("%s of type %s", api.Name, api.Type))
 
-		if len(api.Envars()) > 0 {
-			envars := strings.Join(api.Envars(), ", ")
-			envs = fmt.Sprintf("%s\n\nTransport %s:\n%s", envs, api.ApiName(), envars)
+		if len(api.Envs) > 0 {
+			envars := strings.Join(api.Envs, ", ")
+			envs = fmt.Sprintf("%s\n\nTransport %s:\n%s", envs, api.Name, envars)
 		}
 	}
 

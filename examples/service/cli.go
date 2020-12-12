@@ -15,7 +15,7 @@ func main() {
 	normal := service.NewRole("normal", false)
 	system := service.NewRole("system", true)
 
-	trnsp := transports.Gin(
+	api, trnsp := transports.Gin(
 		"test.example.com",
 		"",
 	)
@@ -24,9 +24,15 @@ func main() {
 		log.Println("This was the before hook")
 		return nil
 	})
-	trnsp.GET("/hello/:world", func(ctx *gin.Context) {
+	hello := trnsp.GET("/hello/:world", func(ctx *gin.Context) {
 		ctx.String(200, "Hello %s!", ctx.Param("world"))
 	}, normal.Name)
+
+	hello.AddAnnotation(annotation.Name("helloWorld"))
+	hello.SetDescription("This endpoint prints hello world")
+	hello.AddPathParam(dto.NewField("world", annotation.Type("string")))
+	hello.AddQueryParam(dto.NewField("format", annotation.Type("string"), annotation.KeyValue("pattern", "\\w")))
+
 	ep := trnsp.POST("/query", func(ctx *gin.Context) {
 		bs, _ := ctx.GetRawData()
 
@@ -35,22 +41,23 @@ func main() {
 		ctx.JSON(200, gin.H{"name": "Query Result", "age": 42})
 	}, system.Name)
 
-	query := dto.NewField("query", dto.String)
+	query := dto.NewField("query", annotation.Type("string"))
 	query.AddAnnotation(annotation.KeyValue("pattern", "\\w"))
 	query.SetDescription("The query string")
 
 	ep.SetDescription("This endpoint is used for callbacks, and this is markdown.")
 	ep.SetExpects(dto.NewEntity("SearchQuery", dto.Fields(query)))
 	ep.SetReturns(dto.NewEntity("SearchDocument", dto.Fields(
-		dto.NewField("name", dto.String),
-		dto.NewField("age", dto.Number),
+		dto.NewField("name", annotation.Type("string")),
+		dto.NewField("age", annotation.Type("number")),
 	)))
+	ep.AddAnnotation(annotation.Name("query"))
 
 	def := service.NewService(
 		"test",
 		"1.2.3",
 		service.Envs("ASDF", "QWERTY"),
-		service.APIs(trnsp),
+		service.APIs(api),
 		service.Roles(normal, system))
 
 	def.SetDescription("A very long\npiece of text\ngoes here...")
