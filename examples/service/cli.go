@@ -11,6 +11,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Result struct {
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+
 func main() {
 	normal := service.NewRole("normal", false)
 	system := service.NewRole("system", true)
@@ -38,7 +43,7 @@ func main() {
 
 		log.Printf("%s", string(bs))
 
-		ctx.JSON(200, gin.H{"name": "Query Result", "age": 42})
+		ctx.JSON(200, &Result{"Query Result", 42})
 	}, system.Name)
 
 	query := dto.NewField("query", annotation.Type("string"))
@@ -47,10 +52,7 @@ func main() {
 
 	ep.SetDescription("This endpoint is used for callbacks, and this is markdown.")
 	ep.SetExpects(dto.NewEntity("SearchQuery", dto.Fields(query)))
-	ep.SetReturns(dto.NewEntity("SearchDocument", dto.Fields(
-		dto.NewField("name", annotation.Type("string")),
-		dto.NewField("age", annotation.Type("number")),
-	)))
+	ep.SetReturns(dto.FromStruct(Result{}))
 	ep.AddAnnotation(annotation.Name("query"))
 
 	def := service.NewService(

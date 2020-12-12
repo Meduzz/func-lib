@@ -1,6 +1,8 @@
 package dto
 
 import (
+	"reflect"
+
 	"github.com/Meduzz/func-lib/servicelib/service/annotation"
 )
 
@@ -24,6 +26,28 @@ func NewEntity(name string, fields []*FieldDTO) *EntityDTO {
 		Name:   name,
 		Fields: fields,
 	}
+}
+
+func FromStruct(dto interface{}) *EntityDTO {
+	entity := reflect.TypeOf(dto)
+
+	if entity.Kind() == reflect.Ptr {
+		entity = entity.Elem()
+	}
+
+	fields := make([]*FieldDTO, 0)
+
+	for i := 0; i < entity.NumField(); i++ {
+		field := entity.Field(i)
+		if name, ok := field.Tag.Lookup("json"); ok {
+			if name != "" {
+				f := NewField(name, annotation.Type(field.Type.String()))
+				fields = append(fields, f)
+			}
+		}
+	}
+
+	return NewEntity(entity.Name(), fields)
 }
 
 func NewField(name string, annotations ...annotation.Annotation) *FieldDTO {
