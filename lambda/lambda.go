@@ -14,23 +14,18 @@ import (
 
 // Gin - starts a gin webserver based on what's setup in the setup lambda.
 func Gin(setup func(*gin.Engine)) error {
-	port := flag.String("bind", "0.0.0.0:8080", "Set what ip&port this server will bind to.")
+	bind := flag.String("bind", "0.0.0.0:8080", "Set what ip&port this server will bind to.")
 	flag.Parse()
 
 	srv := gin.Default()
 	setup(srv)
 
-	/*
-		TODO
-		Verify signatures + autosetup of keys
-	*/
-
-	return srv.Run(*port)
+	return srv.Run(*bind)
 }
 
 // Nats - Create a nats listener server from the provided lambda.
 func Nats(handler func(*nats.Msg)) error {
-	host := flag.String("host", "127.0.0.1:4222", "nats host to connect to")
+	host := flag.String("host", "nats://127.0.0.1:4222", "nats host to connect to")
 	topic := flag.String("topic", "", "nats topic to bind to.")
 	queue := flag.String("queue", "", "queue group to share load with.")
 
@@ -88,10 +83,6 @@ func RPC(handler func(api.Context)) error {
 	}
 
 	srv.Run()
-
-	/*
-		TODO
-	*/
 
 	return nil
 }
